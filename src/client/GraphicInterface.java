@@ -32,18 +32,26 @@ public class GraphicInterface {
 	Color aqua = new Color(0, 255, 255);
 	Color[] colors = {black, white, gray, silver, maroon, red, purple, fushsia, green, lime, olive, yellow, navy, blue, teal, aqua};
 	
-	JButton clearBtn, blackBtn, whiteBtn, grayBtn, silverBtn, maroonBtn, redBtn, purpleBtn, fushsiaBtn, greenBtn, limeBtn, oliveBtn, yellowBtn, navyBtn, blueBtn, tealBtn, aquaBtn;
-	JButton[] btns = {blackBtn, whiteBtn, grayBtn, silverBtn, maroonBtn, redBtn, purpleBtn, fushsiaBtn, greenBtn, limeBtn, oliveBtn, yellowBtn, navyBtn, blueBtn, tealBtn, aquaBtn};
+	JButton clearBtn,
+			lineBtn, circleBtn, ovalBtn, rectangleBtn, textBtn,
+			blackBtn, whiteBtn, grayBtn, silverBtn, maroonBtn, redBtn, purpleBtn, fushsiaBtn, greenBtn, limeBtn, oliveBtn, yellowBtn, navyBtn, blueBtn, tealBtn, aquaBtn;
+	JButton[] shapeBtns = {lineBtn, circleBtn, ovalBtn, rectangleBtn, textBtn};
+	String[] shapes = {"Line","Circle","Oval","Rect","Text"};
+	JButton[] colorBtns = {blackBtn, whiteBtn, grayBtn, silverBtn, maroonBtn, redBtn, purpleBtn, fushsiaBtn, greenBtn, limeBtn, oliveBtn, yellowBtn, navyBtn, blueBtn, tealBtn, aquaBtn};
 	
 	Whiteboard drawArea;
-	Dimension dm = new Dimension(30,30);
+	Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30);
 	
 	ActionListener actionListener = new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
+			JButton b = (JButton) e.getSource();
+			System.out.println(b.getText());
 			if (e.getSource() == clearBtn) {
 				drawArea.clear();
+			} else if (!b.getText().equals("")) {
+				drawArea.changeShape(b.getText());
 			} else {
-				drawArea.changeColor(((JButton)e.getSource()).getBackground());
+				drawArea.changeColor(b.getBackground());
 			}
 		}
 	};
@@ -67,12 +75,19 @@ public class GraphicInterface {
 		clearBtn = new JButton("Clear");
 		clearBtn.addActionListener(actionListener);
 		
-		for (int i = 0; i < btns.length; i++) {
-			btns[i] = new JButton("");
-			btns[i].setPreferredSize(dm);
-			btns[i].setBackground(colors[i]);
-			btns[i].addActionListener(actionListener);
-			controls.add(btns[i]);
+		for (int i = 0; i < shapeBtns.length; i++) {
+			shapeBtns[i] = new JButton(shapes[i]);
+			shapeBtns[i].setPreferredSize(dmShape);
+			shapeBtns[i].addActionListener(actionListener);
+			controls.add(shapeBtns[i]);
+		}
+		
+		for (int i = 0; i < colorBtns.length; i++) {
+			colorBtns[i] = new JButton("");
+			colorBtns[i].setPreferredSize(dmColor);
+			colorBtns[i].setBackground(colors[i]);
+			colorBtns[i].addActionListener(actionListener);
+			controls.add(colorBtns[i]);
 		}
 		
 		controls.add(clearBtn);

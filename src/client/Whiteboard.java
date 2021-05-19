@@ -34,7 +34,7 @@ public class Whiteboard extends JComponent {
 	
 	private Image image;
 	private Graphics2D board;
-	private String shapeName = "line";
+	private String shapeName = "Line";
 	private Color color = new Color(0, 0, 0);
 //	private String text;
 	private Shape shape = new Shape(shapeName, color);
@@ -47,40 +47,38 @@ public class Whiteboard extends JComponent {
 			public void mousePressed(MouseEvent e) {
 				shape.x1 = e.getX();
 				shape.y1 = e.getY();
+//				if (shapeName.equals("Text")) {
+//					
+//				}
 			};
 			
-//			public void mouseReleased(MouseEvent e) {
-//				
-//				x2 = e.getX();
-//				y2 = e.getY();
-//				
-//				if (board != null) {
-//					board.drawLine(x1, y1, x2, y2);
-//					repaint();
-//					x1 = x2;
-//					y1 = y2;
-//				}
-//			}
+			public void mouseReleased(MouseEvent e) {
+				if (!shapeName.equals("Text")) {
+					shape.x2 = e.getX();
+					shape.y2 = e.getY();
+					shape.calculate();
+					drawShape();
+					repaint();
+					shape.x1 = shape.x2;
+					shape.y1 = shape.y2;
+				}
+			}
 			
 		});
 		
 		addMouseMotionListener(new MouseMotionAdapter() {
+			
 			public void mouseDragged(MouseEvent e) {
-				switch (shapeName) {
-					case "line":
-						shape.x2 = e.getX();
-						shape.y2 = e.getY();
-						
-						if (board != null) {
-							drawShape();
-							repaint();
-							shape.x1 = shape.x2;
-							shape.y1 = shape.y2;
-						}
-					
+				if (shapeName.equals("Line")) {
+					shape.x2 = e.getX();
+					shape.y2 = e.getY();
+					drawShape();
+					repaint();
+					shape.x1 = shape.x2;
+					shape.y1 = shape.y2;
 				}
-				
 			}
+			
 		});
 	}
 
@@ -91,7 +89,6 @@ public class Whiteboard extends JComponent {
 			board.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			clear();
 		}
-		
 		g.drawImage(image, 0, 0, null);
 	}
 	
@@ -104,16 +101,16 @@ public class Whiteboard extends JComponent {
 
 	public void drawShape() {
 		switch (shape.shapeName) {
-			case "line":
+			case "Line":
 				board.drawLine(shape.x1, shape.y1, shape.x2, shape.y2);
 				break;
-			case "circle":
+			case "Circle":
 				board.drawOval(shape.x1, shape.y1, Math.min(shape.w, shape.h), Math.min(shape.w, shape.h));
 				break;
-			case "oval":
+			case "Oval":
 				board.drawOval(shape.xMin, shape.yMin, shape.w, shape.h);
 				break;
-			case "Rectangle":
+			case "Rect":
 				board.drawRect(shape.xMin, shape.yMin, shape.w, shape.h);
 				break;
 			case "Text":
@@ -128,29 +125,9 @@ public class Whiteboard extends JComponent {
 		board.setPaint(changeTo);
 	}
 	
-//	public void drawShape() {
-//		board.setPaint(color);
-//		switch (shapeName) {
-//			case "line":
-//				board.drawLine(x1, y1, x2, y2);
-//				break;
-//			case "circle":
-//				board.drawOval(x1, y1, Math.min(Math.abs(x1 - x2), Math.abs(y1 - y2)), Math.min(Math.abs(x1 - x2), Math.abs(y1 - y2)));
-//				break;
-//			case "oval":
-//				board.drawOval(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
-//				break;
-//			case "Rectangle":
-//				board.drawRect(Math.min(x1, x2), Math.min(y1, y2), Math.abs(x1 - x2), Math.abs(y1 - y2));
-//				break;
-//			case "Text":
-//				board.drawString(text, x1, y1);
-//				break;
-//		}
-//	}
-	
-	public Shape getShape() {
-		return shape;
+	public void changeShape(String newShapeName) {
+		shapeName = newShapeName;
+		shape.shapeName = newShapeName;
 	}
  
 }
