@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.io.IOException;
+import java.net.Socket;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,7 +18,8 @@ import javax.swing.JTextField;
 @SuppressWarnings("serial")
 public class Board extends JPanel{
 	
-	Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
+	private Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
+	private int port = 12306;
 	
 	public static void main(String[] args){
 		Board board=new Board(); 
@@ -24,6 +27,8 @@ public class Board extends JPanel{
 	}
 	
 	public void initUI() {
+		
+		Socket socket = createSocket();
 
 		String[] drawBtns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
 		String[] opeBtns = {"New", "Open", "Save", "Save as", "Close", "Leave"};
@@ -43,7 +48,7 @@ public class Board extends JPanel{
 		this.setBackground(Color.white);
 		
 //		Listener listener = new Listener(this);
-		Listener listener = new Listener();
+		Listener listener = new Listener(socket);
 		
 //		Drawing control panels
 		JPanel drawControls = new JPanel();
@@ -117,4 +122,18 @@ public class Board extends JPanel{
 		listener.setBoard((Graphics2D) this.getGraphics());
 		listener.setJp(this);
 	}
+	
+	public Socket createSocket() {
+		
+		Socket socket = null;
+		
+		try {
+			socket = new Socket("localhost", port);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		return socket;
+	}
+	
 }

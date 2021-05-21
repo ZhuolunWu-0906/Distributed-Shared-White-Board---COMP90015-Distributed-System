@@ -11,6 +11,7 @@ import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
@@ -18,26 +19,32 @@ import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.json.simple.JSONObject;
+
 @SuppressWarnings("serial")
 public class Listener extends JPanel implements ActionListener,MouseListener,MouseMotionListener {
 	
-//	private Board gui;
+	private ClientThread ct;
 	private JPanel jp;
 	private Graphics2D board;
 	private Shape shape = new Shape("Pencil", new Color(0, 0, 0));
-	ArrayList<Shape> shapes = new ArrayList<Shape>();
+	private ArrayList<Shape> shapes = new ArrayList<Shape>();
 	
-//	public Listener(Board gui) {
-//		this.gui = gui;
-//	}
+	
+	public Listener(Socket socket) {
+		this.ct = ClientThread.getCT(socket);
+		this.ct.connect();
+	}
 	
 	public void setBoard(Graphics2D board) {
 		this.board = board;
 		this.board.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		ct.setBoard(board);
 	}
 	
-	public void setJp(JPanel j) {
-		this.jp = j;
+	public void setJp(JPanel jp) {
+		this.jp = jp;
+		ct.setJP(jp);
 	}
 
 	@Override
@@ -64,6 +71,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 			shape.x2 = e.getX();
 			shape.y2 = e.getY();
 			drawShape(this.board, shape);
+			ct.sendMsg(writeMessage());
 			shapes.add(shapeCopy());
 			shape.x1 = shape.x2;
 			shape.y1 = shape.y2;
@@ -77,11 +85,13 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 			shape.y2 = e.getY();
 			shape.calculate();
 			drawShape(this.board, shape);
+			ct.sendMsg(writeMessage());
 			shapes.add(shapeCopy());
 		} else {
 			shape.text = JOptionPane.showInputDialog(jp, "Please enter text:", "Text", 1);
 			if (!(shape.text==null)) {
 				drawShape(this.board, shape);
+				ct.sendMsg(writeMessage());
 				shapes.add(shapeCopy());
 			}
 		}
@@ -138,7 +148,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		}
 	}
 	
-	
+//	Draw the shape on board
 	public void drawShape(Graphics2D target, Shape shape) {
 		switch (shape.shapeName) {
 			case "Pencil":
@@ -162,6 +172,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		}
 	}
 	
+//	Make a copy of current drawing shape
 	public Shape shapeCopy() {
 		switch (shape.shapeName) {
 			case "Pencil":
@@ -178,6 +189,25 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 				return new Shape(shape.shapeName, shape.color, shape.text, shape.x1, shape.x2);
 		}
 		return null;
+	}
+	
+	// Write JSON message for sending
+	@SuppressWarnings("unchecked")
+	public JSONObject writeMessage() {
+		
+		JSONObject newMsg = new JSONObject();
+		
+		newMsg.put("shapeName", shape.shapeName);
+		newMsg.put("color", shape.color);
+		newMsg.put("x1", shape.x1);
+		newMsg.put("y1", shape.y1);
+		
+		if (! shape.shapeName.equals("Text")) {
+			newMsg.put("x2", shape.x2);
+			newMsg.put("y2", shape.y2);
+		}
+		
+		return newMsg;
 	}
 	
 	public void clear() {
