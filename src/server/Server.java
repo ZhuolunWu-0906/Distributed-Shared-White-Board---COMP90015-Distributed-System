@@ -5,13 +5,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 
-import client.Shape;
-
 public class Server{
 	
 	private static int port = 12306;
 	//	private ArrayList<Thread>
-	private ArrayList<Shape> shapes = new ArrayList<Shape>();
+	public static ArrayList<String> shapes = new ArrayList<String>();
 	public static ArrayList<ServerThread> socketThreadList = new ArrayList<ServerThread>();
 	
 	@SuppressWarnings("resource")

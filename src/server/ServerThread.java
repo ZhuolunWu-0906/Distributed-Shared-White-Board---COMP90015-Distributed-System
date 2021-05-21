@@ -1,10 +1,17 @@
 package server;
 
+import java.awt.Color;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import client.Shape;
 
 public class ServerThread implements Runnable {
 	
@@ -13,6 +20,8 @@ public class ServerThread implements Runnable {
 	DataInputStream input;
 	DataOutputStream output;
 	private ArrayList<ServerThread> disconnected = new ArrayList<ServerThread>();
+	
+	private JSONParser parser = new JSONParser();
 	
 	public ServerThread(Socket socket) {
 		
@@ -33,6 +42,17 @@ public class ServerThread implements Runnable {
 	@Override
 	public void run() {
 		
+//		Send all saved shapes to new client
+		try {
+			if (Server.shapes.size() > 0) {
+				for (String shape : Server.shapes) {
+					output.writeUTF(shape);
+				}
+			}
+		} catch(IOException e) {
+			
+		}
+		
 		while (!isStopped) {
 			
 //			try {
@@ -48,6 +68,10 @@ public class ServerThread implements Runnable {
 				if (input.available() > 0) {
 					
 					msg = input.readUTF();
+//					If the message is about drawing a new shape, add it to server's shapes ArrayList
+					if (readMsg((JSONObject) parser.parse(msg))) {
+						Server.shapes.add(msg);
+					}
 					
 					for (ServerThread st : Server.socketThreadList) {
 						try {
@@ -67,7 +91,7 @@ public class ServerThread implements Runnable {
 						disconnected.clear();
 					}
 				}
-			} catch (IOException e1) {
+			} catch (IOException | ParseException e1) {
 				e1.printStackTrace();
 			}
 			
@@ -75,8 +99,24 @@ public class ServerThread implements Runnable {
 		
 	}
 	
+	
+//	Stop the thread
 	public void stopThread() {
 		this.isStopped = true;
+	}
+	
+	
+//	Read input message, return true if the message is about drawing a new shape
+//	Otherwise process accordingly
+	private boolean readMsg(JSONObject msg) {
+		
+		switch (msg.get("header").toString()) {
+			case "shape":
+				return true;
+			default:
+				return false;
+		}
+		
 	}
 
 }
