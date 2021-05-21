@@ -21,7 +21,7 @@ public class Board extends JPanel{
 	
 	public void initUI() {
 
-		String[] btns = {"Line", "Circle", "Oval", "Rect", "Text"};
+		String[] btns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
 		
 //		black, white, gray, silver, maroon, red, purple, fushsia, green, lime, olive, yellow, navy, blue, teal, aqua
 		Color[] colors = {new Color(0, 0, 0), new Color(255, 255, 255), new Color(128, 128, 128), new Color(192, 192, 192),
@@ -57,18 +57,18 @@ public class Board extends JPanel{
 			controls.add(btn);
 		}
 		
-//		JButton btn = new JButton("Clear");
-//		btn.setPreferredSize(dmShape);
-//		btn.addActionListener(listener);
-//		controls.add(btn);
+		JButton btn = new JButton("Clear");
+		btn.setPreferredSize(dmShape);
+		btn.addActionListener(listener);
+		controls.add(btn);
+		
+		listener.setJp(this);
 		
 		frame.add(controls, BorderLayout.NORTH);
 		frame.add(this, BorderLayout.CENTER);
 		frame.setVisible(true);
 		this.addMouseListener(listener);
 		this.addMouseMotionListener(listener);
-
 		listener.setBoard((Graphics2D) this.getGraphics());
-		listener.setJp(this);
 	}
 }
