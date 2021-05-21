@@ -25,7 +25,8 @@ public class Board extends JPanel{
 	
 	public void initUI() {
 
-		String[] btns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
+		String[] drawBtns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
+		String[] opeBtns = {"New", "Open", "Save", "Save as", "Close", "Leave"};
 		
 //		black, white, gray, silver, maroon, red, purple, fushsia, green, lime, olive, yellow, navy, blue, teal, aqua
 		Color[] colors = {new Color(0, 0, 0), new Color(255, 255, 255), new Color(128, 128, 128), new Color(192, 192, 192),
@@ -46,8 +47,8 @@ public class Board extends JPanel{
 		
 //		Drawing control panels
 		JPanel drawControls = new JPanel();
-		for (int i = 0; i < btns.length; i++) {
-			JButton btn = new JButton(btns[i]);
+		for (int i = 0; i < drawBtns.length; i++) {
+			JButton btn = new JButton(drawBtns[i]);
 			btn.setPreferredSize(dmShape);
 			btn.addActionListener(listener);
 			drawControls.add(btn);
@@ -94,35 +95,17 @@ public class Board extends JPanel{
 //		File operation panel
 		JPanel fileControls = new JPanel();
 		
-		JButton newBtn = new JButton("New");
-		newBtn.setPreferredSize(dmFile);
-		newBtn.addActionListener(listener);
+		for (int i = 0; i < opeBtns.length; i++) {
+			JButton btn = new JButton(opeBtns[i]);
+			btn.setPreferredSize(dmFile);
+			btn.addActionListener(listener);
+			fileControls.add(btn);
+		}
 		
-		JButton openBtn = new JButton("Open");
-		openBtn.setPreferredSize(dmFile);
-		openBtn.addActionListener(listener);
-		
-		JButton saveBtn = new JButton("Save");
-		saveBtn.setPreferredSize(dmFile);
-		saveBtn.addActionListener(listener);
-		
-		JButton saveAsBtn = new JButton("Save as");
-		saveAsBtn.setPreferredSize(dmFile);
-		saveAsBtn.addActionListener(listener);
-		
-		JButton closeBtn = new JButton("Close");
-		closeBtn.setPreferredSize(dmFile);
-		closeBtn.addActionListener(listener);
-		
-		fileControls.add(newBtn);
-		fileControls.add(openBtn);
-		fileControls.add(saveBtn);
-		fileControls.add(saveAsBtn);
-		fileControls.add(closeBtn);
 		fileControls.setPreferredSize(new Dimension(100, this.getHeight() - drawControls.getHeight() - 2));
 		
-		listener.setJp(this);
 		
+//		Finalizing
 		frame.add(drawControls, BorderLayout.NORTH);
 		frame.add(this, BorderLayout.CENTER);
 		frame.add(chats, BorderLayout.EAST);
@@ -132,5 +115,6 @@ public class Board extends JPanel{
 		this.addMouseListener(listener);
 		this.addMouseMotionListener(listener);
 		listener.setBoard((Graphics2D) this.getGraphics());
+		listener.setJp(this);
 	}
 }
