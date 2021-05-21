@@ -34,7 +34,6 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	
 	public Listener(Socket socket) {
 		this.socket = socket;
-		
 	}
 	
 	public void setBoard(Graphics2D board) {
@@ -111,7 +110,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		
+
 		switch (e.getActionCommand()) {
 		
 //			Changing colors

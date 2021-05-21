@@ -43,7 +43,7 @@ public class Board extends JPanel{
 		frame.setTitle("Distributed Whiteboard");
 		frame.setDefaultCloseOperation(3);
 		frame.setLocationRelativeTo(null);
-		frame.setSize(1300,800);
+		frame.setSize(1200,800);
 		frame.setLayout(new BorderLayout());
 		this.setBackground(Color.white);
 		
