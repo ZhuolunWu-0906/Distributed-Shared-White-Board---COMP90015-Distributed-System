@@ -7,12 +7,16 @@ import java.awt.Graphics2D;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
 
 @SuppressWarnings("serial")
 public class Board extends JPanel{
 	
-	Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30);
+	Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
 	
 	public static void main(String[] args){
 		Board board=new Board(); 
@@ -33,20 +37,20 @@ public class Board extends JPanel{
 		frame.setTitle("Distributed Whiteboard");
 		frame.setDefaultCloseOperation(3);
 		frame.setLocationRelativeTo(null);
-		frame.setSize(1200,600);
+		frame.setSize(1300,800);
 		frame.setLayout(new BorderLayout());
 		this.setBackground(Color.white);
 		
 //		Listener listener = new Listener(this);
 		Listener listener = new Listener();
 		
-		JPanel controls = new JPanel();
-		
+//		Drawing control panels
+		JPanel drawControls = new JPanel();
 		for (int i = 0; i < btns.length; i++) {
 			JButton btn = new JButton(btns[i]);
 			btn.setPreferredSize(dmShape);
 			btn.addActionListener(listener);
-			controls.add(btn);
+			drawControls.add(btn);
 		}
 		
 		for (int i = 0; i < colors.length; i++) {
@@ -54,19 +58,77 @@ public class Board extends JPanel{
 			btn.setBackground(colors[i]);
 			btn.setPreferredSize(dmColor);
 			btn.addActionListener(listener);
-			controls.add(btn);
+			drawControls.add(btn);
 		}
 		
-		JButton btn = new JButton("Clear");
-		btn.setPreferredSize(dmShape);
-		btn.addActionListener(listener);
-		controls.add(btn);
+//		Chats and users panel
+		JPanel chats = new JPanel();
+		
+		JLabel userListLabel = new JLabel("Connected users");
+		JLabel chatWindowLabel = new JLabel("Chats");
+		
+		JTextField userList = new JTextField();
+		userList.setEditable(false);
+		userList.setPreferredSize(new Dimension(245, 150));
+		
+		JTextArea chatArea = new JTextArea();
+		chatArea.setLineWrap(true);
+		chatArea.setWrapStyleWord(true);
+		JScrollPane chatWindow = new JScrollPane(chatArea,javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		chatWindow.setPreferredSize(new Dimension(245, 400));
+		
+		JTextArea texting = new JTextArea();
+		texting.setPreferredSize(new Dimension(245, 70));
+		
+		JButton sendBtn = new JButton("Send");
+		sendBtn.setPreferredSize(new Dimension(245, 30));
+		
+		chats.add(userListLabel);
+		chats.add(userList);
+		chats.add(chatWindowLabel);
+		chats.add(chatWindow);
+		chats.add(texting);
+		chats.add(sendBtn);
+		chats.setPreferredSize(new Dimension(260, this.getHeight() - drawControls.getHeight() - 2));
+		
+//		File operation panel
+		JPanel fileControls = new JPanel();
+		
+		JButton newBtn = new JButton("New");
+		newBtn.setPreferredSize(dmFile);
+		newBtn.addActionListener(listener);
+		
+		JButton openBtn = new JButton("Open");
+		openBtn.setPreferredSize(dmFile);
+		openBtn.addActionListener(listener);
+		
+		JButton saveBtn = new JButton("Save");
+		saveBtn.setPreferredSize(dmFile);
+		saveBtn.addActionListener(listener);
+		
+		JButton saveAsBtn = new JButton("Save as");
+		saveAsBtn.setPreferredSize(dmFile);
+		saveAsBtn.addActionListener(listener);
+		
+		JButton closeBtn = new JButton("Close");
+		closeBtn.setPreferredSize(dmFile);
+		closeBtn.addActionListener(listener);
+		
+		fileControls.add(newBtn);
+		fileControls.add(openBtn);
+		fileControls.add(saveBtn);
+		fileControls.add(saveAsBtn);
+		fileControls.add(closeBtn);
+		fileControls.setPreferredSize(new Dimension(100, this.getHeight() - drawControls.getHeight() - 2));
 		
 		listener.setJp(this);
 		
-		frame.add(controls, BorderLayout.NORTH);
+		frame.add(drawControls, BorderLayout.NORTH);
 		frame.add(this, BorderLayout.CENTER);
+		frame.add(chats, BorderLayout.EAST);
+		frame.add(fileControls, BorderLayout.WEST);
 		frame.setVisible(true);
+		frame.setResizable(false);
 		this.addMouseListener(listener);
 		this.addMouseMotionListener(listener);
 		listener.setBoard((Graphics2D) this.getGraphics());

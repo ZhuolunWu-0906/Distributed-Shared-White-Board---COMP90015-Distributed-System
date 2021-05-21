@@ -8,7 +8,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -20,6 +25,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	private JPanel jp;
 	private Graphics2D board;
 	private Shape shape = new Shape("Pencil", new Color(0, 0, 0));
+	ArrayList<Shape> shapes = new ArrayList<Shape>();
 	
 //	public Listener(Board gui) {
 //		this.gui = gui;
@@ -57,7 +63,8 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		if (shape.shapeName.equals("Pencil")) {
 			shape.x2 = e.getX();
 			shape.y2 = e.getY();
-			drawShape();
+			drawShape(this.board, shape);
+			shapes.add(shapeCopy());
 			shape.x1 = shape.x2;
 			shape.y1 = shape.y2;
 		}
@@ -69,10 +76,14 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 			shape.x2 = e.getX();
 			shape.y2 = e.getY();
 			shape.calculate();
-			drawShape();
+			drawShape(this.board, shape);
+			shapes.add(shapeCopy());
 		} else {
 			shape.text = JOptionPane.showInputDialog(jp, "Please enter text:", "Text", 1);
-			if (!(shape.text==null)) drawShape();
+			if (!(shape.text==null)) {
+				drawShape(this.board, shape);
+				shapes.add(shapeCopy());
+			}
 		}
 		shape.x1 = shape.x2;
 		shape.y1 = shape.y2;
@@ -81,40 +92,46 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		
-		if (e.getActionCommand().equals("")) {
-			JButton button = (JButton) e.getSource();
-			shape.color = button.getBackground();
-			board.setPaint(shape.color);
-		} else if (e.getActionCommand().equals("Clear")){
-			board.setPaint(Color.white);
-			board.fillRect(0, 0, getSize().width, getSize().height);
-			board.setPaint(Color.black);
-			jp.repaint();
-		} else {
-			shape.shapeName = e.getActionCommand();
+		switch (e.getActionCommand()) {
+			case "":
+				JButton button = (JButton) e.getSource();
+				shape.color = button.getBackground();
+				board.setPaint(shape.color);
+				break;
+			case "Save":
+				try {
+					savePng();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				break;
+			default:
+				shape.shapeName = e.getActionCommand();
+				break;
 		}
 	}
 	
 	
-	public void drawShape() {
+	public void drawShape(Graphics2D target, Shape shape) {
 		switch (shape.shapeName) {
 			case "Pencil":
-				board.drawLine(shape.x1, shape.y1, shape.x2, shape.y2);
+				target.drawLine(shape.x1, shape.y1, shape.x2, shape.y2);
 				break;
 			case "Line":
-				board.drawLine(shape.x1, shape.y1, shape.x2, shape.y2);
+				target.drawLine(shape.x1, shape.y1, shape.x2, shape.y2);
 				break;
 			case "Circle":
-				board.drawOval(shape.xMin, shape.yMin, Math.max(shape.w, shape.h), Math.max(shape.w, shape.h));
+				target.drawOval(shape.xMin, shape.yMin, Math.max(shape.w, shape.h), Math.max(shape.w, shape.h));
 				break;
 			case "Oval":
-				board.drawOval(shape.xMin, shape.yMin, shape.w, shape.h);
+				target.drawOval(shape.xMin, shape.yMin, shape.w, shape.h);
 				break;
 			case "Rect":
-				board.drawRect(shape.xMin, shape.yMin, shape.w, shape.h);
+				target.drawRect(shape.xMin, shape.yMin, shape.w, shape.h);
 				break;
 			case "Text":
-				board.drawString(shape.text, shape.x1, shape.y1+4);
+				target.drawString(shape.text, shape.x1, shape.y1+4);
 				break;
 		}
 	}
@@ -135,6 +152,25 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 				return new Shape(shape.shapeName, shape.color, shape.text, shape.x1, shape.x2);
 		}
 		return null;
+	}
+	
+	public void clear() {
+		board.setPaint(Color.white);
+		board.fillRect(0, 0, getSize().width, getSize().height);
+		board.setPaint(Color.black);
+		shapes.clear();
+		jp.repaint();
+	}
+	
+	public void savePng() throws IOException {
+		BufferedImage bi = new BufferedImage(jp.getWidth(), jp.getHeight(), BufferedImage.TYPE_INT_RGB);
+		Graphics2D image = (Graphics2D) bi.getGraphics();
+		image.fillRect(0, 0, jp.getWidth(), jp.getHeight());
+		for (Shape i: shapes) {
+			image.setPaint(i.color);
+			drawShape(image, i);
+		}
+		ImageIO.write(bi, "PNG", new File("nihao.png"));
 	}
 
 }
