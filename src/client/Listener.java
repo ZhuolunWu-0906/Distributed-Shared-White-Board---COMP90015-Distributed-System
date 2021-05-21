@@ -93,11 +93,25 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	public void actionPerformed(ActionEvent e) {
 		
 		switch (e.getActionCommand()) {
+		
+//			Changing colors
 			case "":
 				JButton button = (JButton) e.getSource();
 				shape.color = button.getBackground();
 				board.setPaint(shape.color);
 				break;
+				
+//			Clean current painting and create a new one
+			case "New":
+				clear();
+				break;
+				
+//			Open a painting from file
+			case "Open":
+				
+				break;
+				
+//			Save current painting
 			case "Save":
 				try {
 					savePng();
@@ -106,6 +120,18 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 					e1.printStackTrace();
 				}
 				break;
+				
+//			Save current painting as
+			case "Save as":
+				
+				break;
+				
+//			Close the board
+			case "Close":
+				
+				break;
+				
+//			Change paint shape
 			default:
 				shape.shapeName = e.getActionCommand();
 				break;
