@@ -150,6 +150,9 @@ public class ServerThread implements Runnable {
 						case "close":
 							break;
 							
+						case "clear":
+							break;
+							
 					}
 					
 					// Process disconnected clients
@@ -161,6 +164,7 @@ public class ServerThread implements Runnable {
 						}
 						disconnected.clear();
 					}
+					sendAllUsers();
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -203,6 +207,25 @@ public class ServerThread implements Runnable {
 			}
 		} catch(IOException e) {
 			
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void sendAllUsers() {
+		JSONObject newMsg = new JSONObject();
+		String names = "";
+		for (String name : Server.names) {
+			names = name + "," + names;
+		}
+		newMsg.put("header", "users");
+		newMsg.put("users", names);
+		
+		
+		for (ServerThread st : Server.socketThreadList) {
+			try {
+				st.output.writeUTF(newMsg.toJSONString());
+				st.output.flush();
+			} catch (IOException e) {}
 		}
 	}
 

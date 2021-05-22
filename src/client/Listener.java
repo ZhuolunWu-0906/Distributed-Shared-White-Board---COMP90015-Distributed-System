@@ -31,7 +31,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	private DataInputStream input;
 	private DataOutputStream output;
 	
-	private JPanel jp = null;
+	private Board jp = null;
 	private Graphics2D board = null;
 	private Shape shape = new Shape("Pencil", new Color(0, 0, 0));
 	private ArrayList<Shape> shapes = new ArrayList<Shape>();
@@ -42,7 +42,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		this.output = output;
 	}
 	
-	public void setupBoard(Graphics2D board, JPanel jp) {
+	public void setupBoard(Graphics2D board, Board jp) {
 		this.board = board;
 		this.board.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		this.jp = jp;
@@ -217,7 +217,6 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 			case "":
 				break;
 		}
-		
 		
 		return newMsg;
 	}

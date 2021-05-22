@@ -5,10 +5,9 @@ import java.awt.Graphics2D;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.Socket;
+//import java.net.Socket;
 
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,7 +15,7 @@ import org.json.simple.parser.ParseException;
 
 public class ClientThread {
 
-	private JPanel jp;
+	private Board jp;
 	private Graphics2D board;
 	private Shape shape;
 	
@@ -36,7 +35,7 @@ public class ClientThread {
 		return ct;
 	}
 	
-	public void setupBoard(Graphics2D board, JPanel jp) {
+	public void setupBoard(Graphics2D board, Board jp) {
 		this.board = board;
 		this.jp = jp;
 	}
@@ -54,10 +53,11 @@ public class ClientThread {
 				JSONObject JMsg = null;
 				
 				try {
+					Thread.sleep(200);
 					JMsg = new JSONObject();
 					JMsg.put("header", "initialize");
 					output.writeUTF(JMsg.toJSONString());
-				} catch (IOException e) {
+				} catch (IOException | InterruptedException e) {
 					
 				}
 				
@@ -78,11 +78,12 @@ public class ClientThread {
 							
 							switch (JMsg.get("header").toString()) {
 								case "shape":
+									System.out.println("toShape");
 									String shapeName = JMsg.get("shapeName").toString();
 									Color color = new Color(Integer.parseInt(JMsg.get("color").toString()));
 									int x1 = Integer.parseInt(JMsg.get("x1").toString());
 									int y1 = Integer.parseInt(JMsg.get("y1").toString());
-									if (shapeName == "Text") {
+									if (shapeName.equals("Text")) {
 										String text = JMsg.get("text").toString();
 										shape = new Shape(shapeName, color, text, x1, y1);
 									} else {
@@ -101,6 +102,15 @@ public class ClientThread {
 										JMsg.put("status", "decline");
 									}
 									sendMsg(JMsg);
+									break;
+									
+								case "users":
+									String[] names = JMsg.get("users").toString().split(",");
+									String allNames = "";
+									for (String name : names) {
+										allNames = name + "\n" + allNames;
+									}
+									jp.users.setText(allNames);
 									break;
 							}
 						}

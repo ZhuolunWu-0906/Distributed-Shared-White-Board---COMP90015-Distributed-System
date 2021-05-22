@@ -38,6 +38,9 @@ public class Board extends JPanel{
 	boolean isManager = false;
 	boolean socketCreated = false;
 	
+	JTextArea users;
+	JTextArea chatArea;
+	
 	private Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
 	
 	public static void main(String[] args){
@@ -131,11 +134,13 @@ public class Board extends JPanel{
 			JLabel userListLabel = new JLabel("Connected users");
 			JLabel chatWindowLabel = new JLabel("Chats");
 			
-			JTextField userList = new JTextField();
-			userList.setEditable(false);
+			users = new JTextArea();
+			users.setLineWrap(true);
+			users.setWrapStyleWord(true);
+			JScrollPane userList = new JScrollPane(users,javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			userList.setPreferredSize(new Dimension(245, 150));
 			
-			JTextArea chatArea = new JTextArea();
+			chatArea = new JTextArea();
 			chatArea.setLineWrap(true);
 			chatArea.setWrapStyleWord(true);
 			JScrollPane chatWindow = new JScrollPane(chatArea,javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
