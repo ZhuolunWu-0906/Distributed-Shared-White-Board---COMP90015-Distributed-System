@@ -103,6 +103,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		shape.y1 = shape.y2;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void actionPerformed(ActionEvent e) {
 
@@ -113,6 +114,19 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 				JButton button = (JButton) e.getSource();
 				shape.color = button.getBackground();
 				board.setPaint(shape.color);
+				break;
+			
+//			Chats
+			case "Send":
+				String msg = jp.texting.getText();
+				jp.texting.setText("");
+				if (msg.length() != 0) {
+					JSONObject newMsg = new JSONObject();
+					newMsg.put("header", "chat");
+					newMsg.put("name", jp.name);
+					newMsg.put("msg", msg);
+					ct.sendMsg(newMsg);
+				}
 				break;
 				
 //			Clean current painting and create a new one

@@ -147,6 +147,17 @@ public class ServerThread implements Runnable {
 							}
 							break;
 							
+						case "chat":
+							for (ServerThread st : Server.socketThreadList) {
+								try {
+									st.output.writeUTF(msg);
+									st.output.flush();
+								} catch (IOException e) {
+									disconnected.add(st);
+								}
+							}
+							break;
+							
 						case "close":
 							break;
 							

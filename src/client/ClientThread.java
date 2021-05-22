@@ -78,7 +78,6 @@ public class ClientThread {
 							
 							switch (JMsg.get("header").toString()) {
 								case "shape":
-									System.out.println("toShape");
 									String shapeName = JMsg.get("shapeName").toString();
 									Color color = new Color(Integer.parseInt(JMsg.get("color").toString()));
 									int x1 = Integer.parseInt(JMsg.get("x1").toString());
@@ -112,6 +111,11 @@ public class ClientThread {
 									}
 									jp.users.setText(allNames);
 									break;
+								
+								case "chat":
+									String name = JMsg.get("name").toString();
+									String chatMsg = JMsg.get("msg").toString();
+									jp.chatArea.append(name + ": " + chatMsg + "\n");
 							}
 						}
 					} catch (IOException e1) {

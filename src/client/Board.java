@@ -40,6 +40,7 @@ public class Board extends JPanel{
 	
 	JTextArea users;
 	JTextArea chatArea;
+	JTextArea texting;
 	
 	private Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
 	
@@ -92,7 +93,7 @@ public class Board extends JPanel{
 		
 		if (approved || isManager) {
 			String[] drawBtns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
-			String[] opeBtns = {"New", "Open", "Save", "Save as", "Close", "Leave"};
+			String[] opeBtns = {"New", "Open", "Save", "Save as", "Close"};
 			
 //			black, white, gray, silver, maroon, red, purple, fushsia, green, lime, olive, yellow, navy, blue, teal, aqua
 			Color[] colors = {new Color(0, 0, 0), new Color(255, 255, 255), new Color(128, 128, 128), new Color(192, 192, 192),
@@ -139,18 +140,21 @@ public class Board extends JPanel{
 			users.setWrapStyleWord(true);
 			JScrollPane userList = new JScrollPane(users,javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			userList.setPreferredSize(new Dimension(245, 150));
+			users.setEditable(true);
 			
 			chatArea = new JTextArea();
 			chatArea.setLineWrap(true);
 			chatArea.setWrapStyleWord(true);
 			JScrollPane chatWindow = new JScrollPane(chatArea,javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			chatWindow.setPreferredSize(new Dimension(245, 400));
+			chatArea.setEditable(true);
 			
-			JTextArea texting = new JTextArea();
+			texting = new JTextArea();
 			texting.setPreferredSize(new Dimension(245, 70));
 			
 			JButton sendBtn = new JButton("Send");
 			sendBtn.setPreferredSize(new Dimension(245, 30));
+			sendBtn.addActionListener(listener);
 			
 			chats.add(userListLabel);
 			chats.add(userList);
