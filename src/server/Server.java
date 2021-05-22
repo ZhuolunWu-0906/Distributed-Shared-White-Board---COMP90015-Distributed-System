@@ -12,6 +12,8 @@ public class Server{
 	public static ArrayList<String> shapes = new ArrayList<String>();
 	public static ArrayList<ServerThread> socketThreadList = new ArrayList<ServerThread>();
 	public static ArrayList<String> names = new ArrayList<String>();
+	public static int count = 0;
+	public static ServerThread manager = null;
 	
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
@@ -22,5 +24,4 @@ public class Server{
 			System.out.println("New Client connected!");
 		}
 	}
-	
 }

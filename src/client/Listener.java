@@ -26,7 +26,7 @@ import org.json.simple.JSONObject;
 @SuppressWarnings("serial")
 public class Listener extends JPanel implements ActionListener,MouseListener,MouseMotionListener {
 	
-	private Socket socket;
+//	private Socket socket;
 	private ClientThread ct;
 	private DataInputStream input;
 	private DataOutputStream output;
@@ -37,7 +37,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	private ArrayList<Shape> shapes = new ArrayList<Shape>();
 	
 	public Listener(Socket socket, DataInputStream input, DataOutputStream output) {
-		this.socket = socket;
+//		this.socket = socket;
 		this.input = input;
 		this.output = output;
 	}
@@ -46,7 +46,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		this.board = board;
 		this.board.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		this.jp = jp;
-		this.ct = ClientThread.getCT(socket, input, output);
+		this.ct = ClientThread.getCT(input, output);
 		ct.setupBoard(this.board, this.jp);
 		this.ct.connect();
 	}
