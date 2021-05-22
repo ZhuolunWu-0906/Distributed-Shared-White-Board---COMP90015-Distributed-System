@@ -9,6 +9,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
@@ -26,34 +28,27 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	
 	private Socket socket;
 	private ClientThread ct;
+	private DataInputStream input;
+	private DataOutputStream output;
+	
 	private JPanel jp = null;
 	private Graphics2D board = null;
 	private Shape shape = new Shape("Pencil", new Color(0, 0, 0));
 	private ArrayList<Shape> shapes = new ArrayList<Shape>();
 	
-	
-	public Listener(Socket socket) {
+	public Listener(Socket socket, DataInputStream input, DataOutputStream output) {
 		this.socket = socket;
+		this.input = input;
+		this.output = output;
 	}
 	
-	public void setBoard(Graphics2D board) {
+	public void setupBoard(Graphics2D board, JPanel jp) {
 		this.board = board;
 		this.board.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		initialize();
-	}
-	
-	public void setJp(JPanel jp) {
 		this.jp = jp;
-		initialize();
-	}
-
-	private void initialize() {
-		if (jp != null && board != null) {
-			this.ct = ClientThread.getCT(socket);
-			ct.setBoard(board);
-			ct.setJP(jp);
-			this.ct.connect();
-		}
+		this.ct = ClientThread.getCT(socket, input, output);
+		ct.setupBoard(this.board, this.jp);
+		this.ct.connect();
 	}
 	
 	@Override

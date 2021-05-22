@@ -3,13 +3,19 @@ package client;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -18,17 +24,36 @@ import javax.swing.JTextField;
 @SuppressWarnings("serial")
 public class Board extends JPanel{
 	
+	Socket socket = null;
+	DataInputStream input;
+	DataOutputStream output;
+
+	String ip;
+	int port;
+	String name;
+	
+//	int break;
+	
+	boolean socketCreated = false;
+	
 	private Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
-	private int port = 12306;
 	
 	public static void main(String[] args){
 		Board board=new Board(); 
 		board.initUI();
 	}
 	
-	public void initUI() {
+	private void initUI() {
 		
-		Socket socket = createSocket();
+		connectionUI();
+		
+		while (!this.socketCreated) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		};
 
 		String[] drawBtns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
 		String[] opeBtns = {"New", "Open", "Save", "Save as", "Close", "Leave"};
@@ -41,14 +66,14 @@ public class Board extends JPanel{
 		
 		JFrame frame = new JFrame();
 		frame.setTitle("Distributed Whiteboard");
-		frame.setDefaultCloseOperation(3);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setLocationRelativeTo(null);
 		frame.setSize(1200,800);
 		frame.setLayout(new BorderLayout());
 		this.setBackground(Color.white);
 		
 //		Listener listener = new Listener(this);
-		Listener listener = new Listener(socket);
+		Listener listener = new Listener(socket, input, output);
 		
 //		Drawing control panels
 		JPanel drawControls = new JPanel();
@@ -119,21 +144,91 @@ public class Board extends JPanel{
 		frame.setResizable(false);
 		this.addMouseListener(listener);
 		this.addMouseMotionListener(listener);
-		listener.setBoard((Graphics2D) this.getGraphics());
-		listener.setJp(this);
+		listener.setupBoard((Graphics2D) this.getGraphics(), this);
 	}
 	
-	public Socket createSocket() {
+	
+	private void connectionUI() {
 		
-		Socket socket = null;
 		
-		try {
-			socket = new Socket("localhost", port);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		JFrame frame = new JFrame();
+		frame.setTitle("Connect to server");
+		frame.setSize(300,210);
+		frame.setLocationRelativeTo(null);
+		frame.setLayout(new FlowLayout(FlowLayout.LEADING,20,10));
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		return socket;
+		JLabel ipLabel = new JLabel("IP");
+		ipLabel.setPreferredSize(new Dimension(60,30));
+		JLabel portLabel = new JLabel("Port");
+		portLabel.setPreferredSize(new Dimension(60,30));
+		JLabel nameLabel = new JLabel("Name");
+		nameLabel.setPreferredSize(new Dimension(60,30));
+		
+		JTextField ipField = new JTextField();
+		ipField.setPreferredSize(new Dimension(160,30));
+		JTextField portField = new JTextField();
+		portField.setPreferredSize(new Dimension(160,30));
+		JTextField nameField = new JTextField();
+		nameField.setPreferredSize(new Dimension(160,30));
+		
+		JButton connectBtn = new JButton("Connect");
+		connectBtn.setPreferredSize(new Dimension(245, 30));
+		
+		connectBtn.addActionListener(new ActionListener() {
+		
+			public void actionPerformed(ActionEvent e) {
+				
+				if (!portField.getText().equals("")) {
+					try {
+						port = Integer.parseInt(portField.getText());
+					} catch (NumberFormatException e1) {
+						JOptionPane.showMessageDialog(frame,"Please enter a valid port number.","Error",0); return;
+					}
+				} else {
+					JOptionPane.showMessageDialog(frame,"Please enter a valid port number.","Error",0); return;
+				}
+				
+				if (!ipField.getText().equals("")) {
+					ip = ipField.getText();
+				} else {
+					JOptionPane.showMessageDialog(frame,"Please enter a valid IP address.","Error",0); return;
+				}
+				
+				if (!nameField.getText().equals("")) {
+					name = nameField.getText();
+				} else {
+					JOptionPane.showMessageDialog(frame,"Please enter a valid name.","Error",0); return;
+				}
+				
+				try {
+					socket = new Socket(ip, port);
+					input = new DataInputStream(socket.getInputStream());
+					output = new DataOutputStream(socket.getOutputStream());
+					output.writeUTF("name:"+name);
+					output.flush();
+					if (input.readUTF().equals("succeed")) {
+						socketCreated = true;
+						frame.dispose();
+					} else {
+						JOptionPane.showMessageDialog(frame,"Username existed. Please enter a new username","Error",0); return;
+					}
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				
+            }
+		});
+
+		
+		frame.add(ipLabel);
+		frame.add(ipField);
+		frame.add(portLabel);
+		frame.add(portField);
+		frame.add(nameLabel);
+		frame.add(nameField);
+		frame.add(connectBtn);
+		frame.setVisible(true);
 	}
 	
 }

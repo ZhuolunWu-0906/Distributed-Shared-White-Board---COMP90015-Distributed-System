@@ -11,6 +11,7 @@ public class Server{
 	//	private ArrayList<Thread>
 	public static ArrayList<String> shapes = new ArrayList<String>();
 	public static ArrayList<ServerThread> socketThreadList = new ArrayList<ServerThread>();
+	public static ArrayList<String> names = new ArrayList<String>();
 	
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {

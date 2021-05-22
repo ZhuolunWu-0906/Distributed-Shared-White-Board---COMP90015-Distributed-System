@@ -29,29 +29,21 @@ public class ClientThread {
 //	Singleton creation
 	private ClientThread() {}
 	private static final ClientThread ct = new ClientThread();
-	public static ClientThread getCT(Socket socket) {
+	public static ClientThread getCT(Socket socket, DataInputStream input, DataOutputStream output) {
 		ct.socket = socket;
+		ct.input = input;
+		ct.output = output;
 		return ct;
 	}
 	
-	public void setJP(JPanel jp) {
-		this.jp = jp;
-	}
-	
-	public void setBoard(Graphics2D board) {
+	public void setupBoard(Graphics2D board, JPanel jp) {
 		this.board = board;
+		this.jp = jp;
 	}
 	
 	
 //	Create socket thread
 	public void connect() {
-		
-		try {
-			this.input = new DataInputStream(socket.getInputStream());
-			this.output = new DataOutputStream(socket.getOutputStream());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		
 		new Thread() {
 			boolean isStopped = false;

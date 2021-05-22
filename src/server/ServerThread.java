@@ -15,10 +15,17 @@ import client.Shape;
 
 public class ServerThread implements Runnable {
 	
-	private boolean isStopped = false;
 	private Socket socket;
+	private ArrayList<String> names;
+	private String name;
+	
+	private boolean connected = false;
+	private boolean sent = false;
+	private boolean isStopped = false;
+	
 	DataInputStream input;
 	DataOutputStream output;
+	
 	private ArrayList<ServerThread> disconnected = new ArrayList<ServerThread>();
 	
 	private JSONParser parser = new JSONParser();
@@ -35,25 +42,14 @@ public class ServerThread implements Runnable {
 			e.printStackTrace();
 		}
 		
-		Server.socketThreadList.add(this);
-		
 	}
 	
 	@Override
 	public void run() {
 		
-//		Send all saved shapes to new client
-		try {
-			if (Server.shapes.size() > 0) {
-				for (String shape : Server.shapes) {
-					output.writeUTF(shape);
-				}
-			}
-		} catch(IOException e) {
-			
-		}
-		
 		while (!isStopped) {
+			
+			String msg = null;
 			
 //			try {
 //				Thread.sleep(10);
@@ -61,40 +57,61 @@ public class ServerThread implements Runnable {
 //				e.printStackTrace();
 //			}
 			
-			// Read message
-			String msg = null;
-			
-			try {
-				if (input.available() > 0) {
-					
-					msg = input.readUTF();
-//					If the message is about drawing a new shape, add it to server's shapes ArrayList
-					if (readMsg((JSONObject) parser.parse(msg))) {
-						Server.shapes.add(msg);
-					}
-					
-					for (ServerThread st : Server.socketThreadList) {
-						try {
-							st.output.writeUTF(msg);
-							st.output.flush();
-						} catch (IOException e1) {
-							disconnected.add(st);
+			if (!connected) {
+				try {
+					if (input.available() > 0) {
+						msg = input.readUTF();
+						if (msg.contains("name")) {
+							this.name = msg.split(":")[1];
+							if (addClient()) {
+								connected = true;
+								output.writeUTF("succeed");
+								output.flush();
+							} else {
+								output.writeUTF("failed");
+								output.flush();
+								return;
+							}
 						}
 					}
-					
-					// Process disconnected clients
-					if (disconnected.size() != 0) {
-						for (ServerThread st : disconnected) {
-							Server.socketThreadList.remove(st);
-							st.stopThread();
-						}
-						disconnected.clear();
-					}
+				} catch (IOException e1) {
+					return;
 				}
-			} catch (IOException | ParseException e1) {
-				e1.printStackTrace();
+			} else if (!sent) {
+				sendAllShapes();
+				this.sent = true;
+			} else {
+				try {
+					if (input.available() > 0) {
+						
+						msg = input.readUTF();
+//						If the message is about drawing a new shape, add it to server's shapes ArrayList
+						if (readMsg((JSONObject) parser.parse(msg))) {
+							Server.shapes.add(msg);
+						}
+						
+						for (ServerThread st : Server.socketThreadList) {
+							try {
+								st.output.writeUTF(msg);
+								st.output.flush();
+							} catch (IOException e1) {
+								disconnected.add(st);
+							}
+						}
+						
+						// Process disconnected clients
+						if (disconnected.size() != 0) {
+							for (ServerThread st : disconnected) {
+								Server.socketThreadList.remove(st);
+								st.stopThread();
+							}
+							disconnected.clear();
+						}
+					}
+				} catch (IOException | ParseException e1) {
+					e1.printStackTrace();
+				}
 			}
-			
 		}
 		
 	}
@@ -117,6 +134,29 @@ public class ServerThread implements Runnable {
 				return false;
 		}
 		
+	}
+	
+//	Add new client to arraylist
+	private boolean addClient() {
+		if (!Server.names.contains(name)) {
+			Server.names.add(name);
+			Server.socketThreadList.add(this);
+			return true;
+		}
+		return false;
+	}
+	
+//	Send all stored shapes to a newly connected client
+	private void sendAllShapes() {
+		try {
+			if (Server.shapes.size() > 0) {
+				for (String shape : Server.shapes) {
+					output.writeUTF(shape);
+				}
+			}
+		} catch(IOException e) {
+			
+		}
 	}
 
 }
