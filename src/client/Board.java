@@ -10,7 +10,9 @@ import java.awt.event.ActionListener;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -89,7 +91,7 @@ public class Board extends JPanel{
 		}
 		
 		if (isManager)
-		JOptionPane.showMessageDialog(null,"You are manager!","Notice", JOptionPane.OK_OPTION);
+		JOptionPane.showMessageDialog(null,"You are manager.","Notice", 1);
 		
 		if (approved || isManager) {
 			String[] drawBtns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
@@ -102,14 +104,12 @@ public class Board extends JPanel{
 							new Color(0, 0, 128), new Color(0, 0, 255), new Color(0, 128, 128), new Color(0, 255, 255)};
 			
 			JFrame frame = new JFrame();
-			frame.setTitle("Distributed Whiteboard:  " + name);
+			frame.setTitle("Distributed Whiteboard:  " + (isManager ? "Manager ":"") + name);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.setLocationRelativeTo(null);
 			frame.setSize(1200,800);
 			frame.setLayout(new BorderLayout());
 			this.setBackground(Color.white);
-			
-//			Listener listener = new Listener(this);
 			Listener listener = new Listener(socket, input, output);
 			
 //			Drawing control panels
@@ -182,6 +182,7 @@ public class Board extends JPanel{
 			frame.add(this, BorderLayout.CENTER);
 			frame.add(chats, BorderLayout.EAST);
 			frame.add(fileControls, BorderLayout.WEST);
+			frame.addWindowListener(listener);
 			frame.setVisible(true);
 			frame.setResizable(false);
 			this.addMouseListener(listener);
@@ -189,7 +190,7 @@ public class Board extends JPanel{
 			listener.setupBoard((Graphics2D) this.getGraphics(), this);
 			
 		} else {
-			JOptionPane.showMessageDialog(null,"Sorry, manager refused your connection request","Error",0);
+			JOptionPane.showMessageDialog(null,"Sorry, manager refused your connection request","Error", 0);
 		}
 
 		
@@ -262,7 +263,13 @@ public class Board extends JPanel{
 				
 				// Try to create socket and connect to sercer
 				try {
-					socket = new Socket(ip, port);
+					try {
+						socket = new Socket(ip, port);
+					} catch (UnknownHostException e1) {
+						JOptionPane.showMessageDialog(frame,"Invalid IP address, please check again.","Error",0); return;
+					} catch (ConnectException e1) {
+						JOptionPane.showMessageDialog(frame,"Invalid port number, please check again.","Error",0); return;
+					}
 					input = new DataInputStream(socket.getInputStream());
 					output = new DataOutputStream(socket.getOutputStream());
 					
@@ -280,7 +287,7 @@ public class Board extends JPanel{
 						socketCreated = true;
 						frame.dispose();
 					} else {
-						JOptionPane.showMessageDialog(frame,"Username existed. Please enter a new username","Error",0); System.exit(1);
+						JOptionPane.showMessageDialog(frame,"Username existed. Please enter a new username","Error",0); return;
 					}
 					
 				} catch (IOException e1) {

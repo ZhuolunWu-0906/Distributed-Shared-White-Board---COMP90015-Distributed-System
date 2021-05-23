@@ -16,8 +16,10 @@ import org.json.simple.parser.ParseException;
 public class ClientThread {
 
 	private Board jp;
-	private Graphics2D board;
+	private Listener listener;
 	private Shape shape;
+	
+	private boolean isStopped = false;
 	
 //	private Socket socket;
 	private DataInputStream input;
@@ -35,8 +37,8 @@ public class ClientThread {
 		return ct;
 	}
 	
-	public void setupBoard(Graphics2D board, Board jp) {
-		this.board = board;
+	public void setupBoard(Listener board, Board jp) {
+		this.listener = board;
 		this.jp = jp;
 	}
 	
@@ -61,7 +63,7 @@ public class ClientThread {
 					
 				}
 				
-				while (true) {
+				while (!isStopped) {
 					msg = null;
 					JMsg = null;
 //					try {
@@ -90,7 +92,7 @@ public class ClientThread {
 										int y2 = Integer.parseInt(JMsg.get("y2").toString());
 										shape = new Shape(shapeName, color, x1, y1, x2, y2);
 									}
-									drawShape(board, shape);
+									drawShape(listener.board, shape);
 									break;
 									
 								case "connect":
@@ -116,6 +118,16 @@ public class ClientThread {
 									String name = JMsg.get("name").toString();
 									String chatMsg = JMsg.get("msg").toString();
 									jp.chatArea.append(name + ": " + chatMsg + "\n");
+									break;
+									
+								case "new":
+									listener.clear();
+									listener.shapes.clear();
+									break;
+								
+								case "close":
+									JOptionPane.showMessageDialog(jp,"Whiteboard is closed by manager","Whiteboard closed",1);
+									System.exit(1);
 							}
 						}
 					} catch (IOException e1) {
@@ -125,6 +137,11 @@ public class ClientThread {
 				}
 			}
 		}.start();
+	}
+	
+//	Stop the thread
+	public void stopThread() {
+		this.isStopped = true;
 	}
 	
 	
@@ -140,7 +157,7 @@ public class ClientThread {
 
 //	Draw the shape on board
 	public void drawShape(Graphics2D target, Shape shape) {
-		board.setPaint(shape.color);
+		listener.board.setPaint(shape.color);
 		switch (shape.shapeName) {
 			case "Pencil":
 				target.drawLine(shape.x1, shape.y1, shape.x2, shape.y2);

@@ -8,6 +8,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -24,20 +26,19 @@ import javax.swing.JPanel;
 import org.json.simple.JSONObject;
 
 @SuppressWarnings("serial")
-public class Listener extends JPanel implements ActionListener,MouseListener,MouseMotionListener {
+public class Listener extends JPanel implements ActionListener, MouseListener, MouseMotionListener, WindowListener {
 	
-//	private Socket socket;
-	private ClientThread ct;
+	private ClientThread clientThread;
 	private DataInputStream input;
 	private DataOutputStream output;
 	
 	private Board jp = null;
-	private Graphics2D board = null;
 	private Shape shape = new Shape("Pencil", new Color(0, 0, 0));
-	private ArrayList<Shape> shapes = new ArrayList<Shape>();
+
+	public Graphics2D board = null;
+	public ArrayList<Shape> shapes = new ArrayList<Shape>();
 	
 	public Listener(Socket socket, DataInputStream input, DataOutputStream output) {
-//		this.socket = socket;
 		this.input = input;
 		this.output = output;
 	}
@@ -46,10 +47,28 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		this.board = board;
 		this.board.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		this.jp = jp;
-		this.ct = ClientThread.getCT(input, output);
-		ct.setupBoard(this.board, this.jp);
-		this.ct.connect();
+		this.clientThread = ClientThread.getCT(input, output);
+		clientThread.setupBoard(this, this.jp);
+		this.clientThread.connect();
 	}
+	
+	@Override
+	public void windowOpened(WindowEvent e) {}
+
+	@Override
+	public void windowClosed(WindowEvent e) {}
+
+	@Override
+	public void windowIconified(WindowEvent e) {}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {}
+
+	@Override
+	public void windowActivated(WindowEvent e) {}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {}
 	
 	@Override
 	public void mouseMoved(MouseEvent e) {}
@@ -63,6 +82,13 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	@Override
 	public void mouseExited(MouseEvent e) {}
 	
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		sendClose();
+		System.exit(1);
+	}
+	
 	@Override
 	public void mousePressed(MouseEvent e) {
 		shape.x1 = e.getX();
@@ -74,8 +100,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		if (shape.shapeName.equals("Pencil")) {
 			shape.x2 = e.getX();
 			shape.y2 = e.getY();
-//			drawShape(this.board, shape);
-			ct.sendMsg(writeMessage("shape"));
+			sendShape();
 			shapes.add(shapeCopy());
 			shape.x1 = shape.x2;
 			shape.y1 = shape.y2;
@@ -88,14 +113,12 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 			shape.x2 = e.getX();
 			shape.y2 = e.getY();
 			shape.calculate();
-//			drawShape(this.board, shape);
-			ct.sendMsg(writeMessage("shape"));
+			sendShape();
 			shapes.add(shapeCopy());
 		} else {
 			shape.text = JOptionPane.showInputDialog(jp, "Please enter text:", "Text", 1);
 			if (!(shape.text==null)) {
-//				drawShape(this.board, shape);
-				ct.sendMsg(writeMessage("shape"));
+				sendShape();
 				shapes.add(shapeCopy());
 			}
 		}
@@ -125,38 +148,64 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 					newMsg.put("header", "chat");
 					newMsg.put("name", jp.name);
 					newMsg.put("msg", msg);
-					ct.sendMsg(newMsg);
+					clientThread.sendMsg(newMsg);
 				}
 				break;
 				
 //			Clean current painting and create a new one
 			case "New":
-				clear();
+				if (jp.isManager) {
+					if (0 == JOptionPane.showConfirmDialog(jp,"If you create a new whiteboard, all changes would be gone. Please save before you creeate a new one.","Create new whiteboard",0)) {
+						sendNew();
+					}
+				} else {
+					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
+				}
+				
 				break;
 				
 //			Open a painting from file
 			case "Open":
-				
+				if (jp.isManager) {
+					
+				} else {
+					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
+				}
 				break;
 				
 //			Save current painting
 			case "Save":
-				try {
-					savePng();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+				if (jp.isManager) {
+					try {
+						savePng();
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				} else {
+					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
 				}
+				
 				break;
 				
 //			Save current painting as
 			case "Save as":
-				
+				if (jp.isManager) {
+					
+				} else {
+					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
+				}
 				break;
 				
 //			Close the board
 			case "Close":
-				
+				if (jp.isManager) {
+					if (0 == JOptionPane.showConfirmDialog(jp,"If you close this whiteboard, all changes would be gone and the server would stop. Please save before you close.","Close whiteboard",0)) {
+						sendClose();
+						System.exit(1);
+					}
+				} else {
+					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
+				}
 				break;
 				
 //			Change paint shape
@@ -167,7 +216,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	}
 	
 //	Draw the shape on board
-	public void drawShape(Graphics2D target, Shape shape) {
+	private void drawShape(Graphics2D target, Shape shape) {
 		switch (shape.shapeName) {
 			case "Pencil":
 				target.drawLine(shape.x1, shape.y1, shape.x2, shape.y2);
@@ -191,7 +240,7 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 	}
 	
 //	Make a copy of current drawing shape
-	public Shape shapeCopy() {
+	private Shape shapeCopy() {
 		switch (shape.shapeName) {
 			case "Pencil":
 				return new Shape(shape.shapeName, shape.color, shape.x1, shape.y1, shape.x2, shape.y2);
@@ -209,30 +258,39 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		return null;
 	}
 	
-	// Write JSON message for sending
+	// Send new shapes
 	@SuppressWarnings("unchecked")
-	public JSONObject writeMessage(String header) {
+	private void sendShape() {
 		
 		JSONObject newMsg = new JSONObject();
-		newMsg.put("header", header);
+		newMsg.put("header", "shape");
 		
-		switch (header) {
-			case "shape":
-				newMsg.put("shapeName", shape.shapeName);
-				newMsg.put("color", shape.color.getRGB());
-				newMsg.put("x1", shape.x1);
-				newMsg.put("y1", shape.y1);
-				if (! shape.shapeName.equals("Text")) {
-					newMsg.put("text", shape.text);
-					newMsg.put("x2", shape.x2);
-					newMsg.put("y2", shape.y2);
-				}
-				break;
-			case "":
-				break;
+		newMsg.put("shapeName", shape.shapeName);
+		newMsg.put("color", shape.color.getRGB());
+		newMsg.put("x1", shape.x1);
+		newMsg.put("y1", shape.y1);
+		if (shape.shapeName.equals("Text")) {
+			newMsg.put("text", shape.text);
+		} else {
+			newMsg.put("x2", shape.x2);
+			newMsg.put("y2", shape.y2);
 		}
 		
-		return newMsg;
+		clientThread.sendMsg(newMsg);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void sendClose() {
+		JSONObject newMsg = new JSONObject();
+		newMsg.put("header", "close");
+		clientThread.sendMsg(newMsg);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void sendNew() {
+		JSONObject newMsg = new JSONObject();
+		newMsg.put("header", "new");
+		clientThread.sendMsg(newMsg);
 	}
 	
 	public void clear() {
@@ -243,15 +301,15 @@ public class Listener extends JPanel implements ActionListener,MouseListener,Mou
 		jp.repaint();
 	}
 	
-	public void savePng() throws IOException {
+	private void savePng() throws IOException {
 		BufferedImage bi = new BufferedImage(jp.getWidth(), jp.getHeight(), BufferedImage.TYPE_INT_RGB);
 		Graphics2D image = (Graphics2D) bi.getGraphics();
 		image.fillRect(0, 0, jp.getWidth(), jp.getHeight());
-		for (Shape i: shapes) {
-			image.setPaint(i.color);
-			drawShape(image, i);
+		for (int i = 0; i < shapes.size(); i++) {
+			image.setPaint(shapes.get(i).color);
+			drawShape(image, shapes.get(i));
 		}
-		ImageIO.write(bi, "PNG", new File("nihao.png"));
+		ImageIO.write(bi, "PNG", new File("new-painting.png"));
 	}
 
 }
