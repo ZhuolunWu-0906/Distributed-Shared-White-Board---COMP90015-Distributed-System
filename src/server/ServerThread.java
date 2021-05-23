@@ -56,7 +56,6 @@ public class ServerThread implements Runnable {
 					
 					msg = input.readUTF();
 					JMsg = parseJson(msg);
-					System.out.println(msg);
 					JSONObject reply = new JSONObject();
 					
 					switch (JMsg.get("header").toString()) {
@@ -73,14 +72,17 @@ public class ServerThread implements Runnable {
 								Server.addClient(name, this);
 								Server.addCount();
 								Server.manager = this;
+								System.out.println("Manager " + name + " connected.");
 							} else if (Server.nameExist(name)) {
 								// Duplicate name exist
 								reply.put("status", "failure");
+								System.out.println("New client trys to connect, but name duplicated.");
 								this.stopThread();
 							} else {
 								// Connected as normal user
 								reply.put("status", "success");
 								reply.put("role", "user");
+								System.out.println("New user " + name + " connected, waiting for manager's approvement.");
 								try {
 									Server.manager.output.writeUTF(msg);
 									Server.manager.output.flush();
@@ -110,10 +112,12 @@ public class ServerThread implements Runnable {
 							if (JMsg.get("status").equals("approve")) {
 								Server.addClient(requestName, requestST);
 								Server.addCount();
+								System.out.println("Manager " + name + " approved new client " + requestName + "\'s request.\nNew client " + name + "successfully connected.");
 							} else {
 								requestListNames.remove(index);
 								requestList.remove(index);
 								requestST.stopThread();
+								System.out.println("Manager " + name + " declined new client " + requestName + "\'s request.");
 							}
 							
 							try {

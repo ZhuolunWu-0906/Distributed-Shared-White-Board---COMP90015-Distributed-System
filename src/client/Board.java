@@ -112,7 +112,11 @@ public class Board extends JPanel{
 			frame.setTitle("Distributed Whiteboard:  " + (isManager ? "Manager ":"") + name);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.setLocationRelativeTo(null);
-			frame.setSize(1200,800);
+			if (isManager) {
+				frame.setSize(1200,800);
+			} else {
+				frame.setSize(1100,800);
+			}
 			frame.setLayout(new BorderLayout());
 			this.setBackground(Color.white);
 			Listener listener = new Listener(socket, input, output);
@@ -195,7 +199,9 @@ public class Board extends JPanel{
 			frame.add(drawControls, BorderLayout.NORTH);
 			frame.add(this, BorderLayout.CENTER);
 			frame.add(chats, BorderLayout.EAST);
-			frame.add(fileControls, BorderLayout.WEST);
+			if (isManager) {
+				frame.add(fileControls, BorderLayout.WEST);
+			}
 			frame.addWindowListener(listener);
 			frame.setVisible(true);
 			frame.setResizable(false);

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Server{
 	
-	private static int port = 12306;
+	private static int port;
 	//	private ArrayList<Thread>
 	public static ArrayList<String> shapes = new ArrayList<String>();
 	public static ArrayList<ServerThread> socketThreadList = new ArrayList<ServerThread>();
@@ -17,11 +17,27 @@ public class Server{
 	
 	@SuppressWarnings("resource")
 	public static void main(String[] args) throws IOException {
+		
+		if (args.length != 1) {
+			System.out.println("System exited, please restart with a port number only.");
+			return;
+		} else {
+			try {
+				port = Integer.parseInt(args[0]);
+			} catch (NumberFormatException e) {
+				System.out.println("System exited, please restart with a valid port number.");
+			}
+		}
+		
+		System.out.println("Port number read, now trying to create the server socket.");
+		
 		ServerSocket serverSocket = new ServerSocket(port);
+		
+		System.out.println("SUCCESS - Server socket created \nWaiting for connection requests ...");
+		
 		while(true){
 			Socket socket = serverSocket.accept();
 			new Thread(new ServerThread(socket)).start();
-			System.out.println("New Client connected!");
 		}
 	}
 	
