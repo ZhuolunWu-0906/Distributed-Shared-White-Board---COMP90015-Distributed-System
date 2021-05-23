@@ -13,8 +13,10 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -43,6 +45,9 @@ public class Board extends JPanel{
 	JTextArea users;
 	JTextArea chatArea;
 	JTextArea texting;
+	JComboBox<String> kickUser;
+	
+	public ArrayList<String> userList = new ArrayList<String>();
 	
 	private Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
 	
@@ -95,7 +100,7 @@ public class Board extends JPanel{
 		
 		if (approved || isManager) {
 			String[] drawBtns = {"Line", "Circle", "Oval", "Rect", "Text"};
-			String[] opeBtns = {"New", "Open", "Save", "Save as", "Close"};
+			String[] opeBtns = {"New", "Open", "Save", "Save as", "Kick", "Close"};
 			
 //			black, white, gray, silver, maroon, red, purple, fushsia, green, lime, olive, yellow, navy, blue, teal, aqua
 			Color[] colors = {new Color(0, 0, 0), new Color(255, 255, 255), new Color(128, 128, 128), new Color(192, 192, 192),
@@ -173,6 +178,15 @@ public class Board extends JPanel{
 				btn.addActionListener(listener);
 				fileControls.add(btn);
 			}
+			
+			JLabel kick = new JLabel("Kick");
+			kickUser = new JComboBox<String>();
+			kickUser.addItem("--Select--");
+			kickUser.setPreferredSize(dmFile);
+			kickUser.addActionListener(listener);
+			
+			fileControls.add(kick);
+			fileControls.add(kickUser);
 			
 			fileControls.setPreferredSize(new Dimension(100, this.getHeight() - drawControls.getHeight() - 2));
 			

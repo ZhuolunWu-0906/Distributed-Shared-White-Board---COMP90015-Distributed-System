@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-//import java.net.Socket;
 
 import javax.swing.JOptionPane;
 
@@ -66,17 +65,14 @@ public class ClientThread {
 				while (!isStopped) {
 					msg = null;
 					JMsg = null;
-//					try {
-//						Thread.sleep(10);
-//					} catch (InterruptedException e) {
-//						e.printStackTrace();
-//					}
 					
 					try {
 						if (input.available() > 0) {
 							
 							msg = input.readUTF();
 							JMsg = parseJson(msg);
+							
+							System.out.println(msg);
 							
 							switch (JMsg.get("header").toString()) {
 								case "shape":
@@ -108,10 +104,20 @@ public class ClientThread {
 								case "users":
 									String[] names = JMsg.get("users").toString().split(",");
 									String allNames = "";
+									
+									jp.userList.clear();
+									
+									jp.kickUser.removeAllItems();
+									jp.kickUser.addItem("--Select--");
 									for (String name : names) {
+										jp.userList.add(name);
+										if (!name.equals(jp.name)) {
+											jp.kickUser.addItem(name);
+										}
 										allNames = name + "\n" + allNames;
 									}
 									jp.users.setText(allNames);
+									
 									break;
 								
 								case "chat":
@@ -126,8 +132,16 @@ public class ClientThread {
 									break;
 								
 								case "close":
-									JOptionPane.showMessageDialog(jp,"Whiteboard is closed by manager","Whiteboard closed",1);
+									JOptionPane.showMessageDialog(jp,"Whiteboard is closed by manager","Whiteboard closed",0);
 									System.exit(1);
+									
+								case "kick":
+									JOptionPane.showMessageDialog(jp,"Sorry, you are kicked by the manager","Kicked",0);
+									System.exit(1);
+								
+								default:
+									System.out.println("Received unexpected message from server: "+ msg);
+									
 							}
 						}
 					} catch (IOException e1) {

@@ -23,6 +23,7 @@ import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -254,6 +255,24 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
 				}
 				break;
+			
+//			Kick user
+			case "comboBoxChanged":
+				
+				JComboBox<String> cb = (JComboBox<String>) e.getSource();
+			    String name = (String)cb.getSelectedItem();
+			    if (name != null && !name.equals("--Select--")) {
+			    	if (jp.isManager) {
+			    		if (0 == JOptionPane.showConfirmDialog(jp,"Are you sure you want to kick " + name + "?","Kick user",0)) {
+			    			kickUser(name);
+			    		}
+			    		cb.setSelectedIndex(0);
+			    	} else {
+			    		JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
+			    		cb.setSelectedIndex(0);
+			    	}
+			    } 
+				break;
 				
 //			Close the board
 			case "Close":
@@ -349,6 +368,14 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 	private void sendNew() {
 		JSONObject newMsg = new JSONObject();
 		newMsg.put("header", "new");
+		clientThread.sendMsg(newMsg);
+	}
+	
+	@SuppressWarnings({ "unchecked" })
+	private void kickUser(String name) {
+		JSONObject newMsg = new JSONObject();
+		newMsg.put("header", "kick");
+		newMsg.put("name", name);
 		clientThread.sendMsg(newMsg);
 	}
 	

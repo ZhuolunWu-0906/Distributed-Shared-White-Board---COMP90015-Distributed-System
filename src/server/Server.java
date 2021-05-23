@@ -12,7 +12,7 @@ public class Server{
 	public static ArrayList<String> shapes = new ArrayList<String>();
 	public static ArrayList<ServerThread> socketThreadList = new ArrayList<ServerThread>();
 	public static ArrayList<String> names = new ArrayList<String>();
-	public static int count = 0;
+	private static int count = 0;
 	public static ServerThread manager = null;
 	
 	@SuppressWarnings("resource")
@@ -61,11 +61,11 @@ public class Server{
 		return names.get(socketThreadList.indexOf(st));
 	}
 	
-	public synchronized static ServerThread getServerSocket(int index) {
+	public synchronized static ServerThread getServerThread(int index) {
 		return socketThreadList.get(index);
 	}
 	
-	public synchronized static ServerThread getServerSocket(String name) {
+	public synchronized static ServerThread getServerThread(String name) {
 		return socketThreadList.get(names.indexOf(name));
 	}
 	

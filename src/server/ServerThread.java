@@ -47,12 +47,6 @@ public class ServerThread implements Runnable {
 		
 		while (!isStopped) {
 			
-//			try {
-//				Thread.sleep(10);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-			
 			String msg = null;
 			JSONObject JMsg = null;	
 			
@@ -62,6 +56,7 @@ public class ServerThread implements Runnable {
 					
 					msg = input.readUTF();
 					JMsg = parseJson(msg);
+					System.out.println(msg);
 					JSONObject reply = new JSONObject();
 					
 					switch (JMsg.get("header").toString()) {
@@ -210,6 +205,15 @@ public class ServerThread implements Runnable {
 								}
 							}
 							break;
+						
+						case "kick":
+							String userName = JMsg.get("name").toString();
+							ServerThread st = Server.getServerThread(userName);
+							st.output.writeUTF(msg);
+							Server.remove(st);
+						
+						default:
+							System.out.println("Received unexpected message from client " + name + ": "+ msg);
 							
 					}
 					
