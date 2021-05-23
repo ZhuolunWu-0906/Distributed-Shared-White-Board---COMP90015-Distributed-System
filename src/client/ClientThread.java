@@ -188,7 +188,7 @@ public class ClientThread {
 		try {
 			JMsg = (JSONObject) parser.parse(msg);
 		} catch (ParseException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 		}
 		
 		return JMsg;
