@@ -72,6 +72,8 @@ public class ClientThread {
 							msg = input.readUTF();
 							JMsg = parseJson(msg);
 							
+//							System.out.println(msg);
+							
 							switch (JMsg.get("header").toString()) {
 								case "shape":
 									String shapeName = JMsg.get("shapeName").toString();

@@ -48,14 +48,15 @@ public class ServerThread implements Runnable {
 		while (!isStopped) {
 			
 			String msg = null;
-			JSONObject JMsg = null;	
-			
+			JSONObject JMsg = null;
 			
 			try {
 				if (input.available() > 0) {
 					
 					msg = input.readUTF();
 					JMsg = parseJson(msg);
+
+//					System.out.println(msg);
 					JSONObject reply = new JSONObject();
 					
 					switch (JMsg.get("header").toString()) {
@@ -112,7 +113,7 @@ public class ServerThread implements Runnable {
 							if (JMsg.get("status").equals("approve")) {
 								Server.addClient(requestName, requestST);
 								Server.addCount();
-								System.out.println("Manager " + name + " approved new client " + requestName + "\'s request.\nNew client " + name + "successfully connected.");
+								System.out.println("Manager " + name + " approved new client " + requestName + "\'s request.\nNew client " + name + " successfully connected.");
 							} else {
 								requestListNames.remove(index);
 								requestList.remove(index);
@@ -196,6 +197,11 @@ public class ServerThread implements Runnable {
 						
 						// New whiteboard
 						case "new":
+							try {
+								Thread.sleep(300);
+							} catch (InterruptedException e1) {
+								e1.printStackTrace();
+							}
 							Server.clearShape();
 							synchronized(Server.socketThreadList) {
 								for (ServerThread st : Server.socketThreadList) {

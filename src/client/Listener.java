@@ -201,7 +201,6 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 								}
 								
 								sendNew();
-								Thread.sleep(100);
 								for (int i = 0; i < jsons.size(); i++) {
 									clientThread.sendMsg((JSONObject) jsons.get(i));
 								}
@@ -212,8 +211,6 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 							
 						} catch (FileNotFoundException e1) {
 							JOptionPane.showMessageDialog(jp,"Failed to open File Scanner.","File Scanner error",0);
-						} catch (InterruptedException e1) {
-							e1.printStackTrace();
 						}
 						
 //						while

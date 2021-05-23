@@ -100,7 +100,7 @@ public class Board extends JPanel{
 		
 		if (approved || isManager) {
 			String[] drawBtns = {"Line", "Circle", "Oval", "Rect", "Text"};
-			String[] opeBtns = {"New", "Open", "Save", "Save as", "Kick", "Close"};
+			String[] opeBtns = {"New", "Open", "Save", "Save as", "Close"};
 			
 //			black, white, gray, silver, maroon, red, purple, fushsia, green, lime, olive, yellow, navy, blue, teal, aqua
 			Color[] colors = {new Color(0, 0, 0), new Color(255, 255, 255), new Color(128, 128, 128), new Color(192, 192, 192),
