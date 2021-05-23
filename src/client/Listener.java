@@ -40,7 +40,7 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 	private DataOutputStream output;
 	
 	private Board jp = null;
-	private Shape shape = new Shape("Pencil", new Color(0, 0, 0));
+	private Shape shape = new Shape("Line", new Color(0, 0, 0));
 
 	public Graphics2D board = null;
 	public ArrayList<Shape> shapes = new ArrayList<Shape>();
@@ -105,16 +105,7 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 	}
 	
 	@Override
-	public void mouseDragged(MouseEvent e) {
-		if (shape.shapeName.equals("Pencil")) {
-			shape.x2 = e.getX();
-			shape.y2 = e.getY();
-			sendShape();
-			shapes.add(shapeCopy());
-			shape.x1 = shape.x2;
-			shape.y1 = shape.y2;
-		}
-	}
+	public void mouseDragged(MouseEvent e) {}
 	
 	@Override
 	public void mouseReleased(MouseEvent e) {

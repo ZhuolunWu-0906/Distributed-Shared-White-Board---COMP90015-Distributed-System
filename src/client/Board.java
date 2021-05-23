@@ -94,7 +94,7 @@ public class Board extends JPanel{
 		JOptionPane.showMessageDialog(null,"You are manager.","Notice", 1);
 		
 		if (approved || isManager) {
-			String[] drawBtns = {"Pencil", "Line", "Circle", "Oval", "Rect", "Text"};
+			String[] drawBtns = {"Line", "Circle", "Oval", "Rect", "Text"};
 			String[] opeBtns = {"New", "Open", "Save", "Save as", "Close"};
 			
 //			black, white, gray, silver, maroon, red, purple, fushsia, green, lime, olive, yellow, navy, blue, teal, aqua
