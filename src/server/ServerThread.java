@@ -71,16 +71,14 @@ public class ServerThread implements Runnable {
 							name = JMsg.get("name").toString();
 							reply.put("header", "connect");
 							reply.put("name", name);
-							
-							if (Server.count == 0) {
+							if (Server.getCount() == 0) {
 								// Manager
 								reply.put("status", "success");
 								reply.put("role", "manager");
+								Server.addClient(name, this);
+								Server.addCount();
 								Server.manager = this;
-								Server.names.add(name);
-								Server.socketThreadList.add(this);
-								Server.count++;
-							} else if (Server.names.contains(name)) {
+							} else if (Server.nameExist(name)) {
 								// Duplicate name exist
 								reply.put("status", "failure");
 								this.stopThread();
@@ -115,8 +113,8 @@ public class ServerThread implements Runnable {
 							ServerThread requestST = requestList.get(index);
 							
 							if (JMsg.get("status").equals("approve")) {
-								Server.socketThreadList.add(requestST);
-								Server.names.add(requestName);
+								Server.addClient(requestName, requestST);
+								Server.addCount();
 							} else {
 								requestListNames.remove(index);
 								requestList.remove(index);
@@ -143,25 +141,29 @@ public class ServerThread implements Runnable {
 							
 						// New shape incoming; also works for case open whiteboard from file
 						case "shape":
-							Server.shapes.add(msg);
-							for (ServerThread st : Server.socketThreadList) {
-								try {
-									st.output.writeUTF(msg);
-									st.output.flush();
-								} catch (IOException e) {
-									disconnected.add(st);
+							Server.addShape(msg);
+							synchronized(Server.socketThreadList) {
+								for (ServerThread st : Server.socketThreadList) {
+									try {
+										st.output.writeUTF(msg);
+										st.output.flush();
+									} catch (IOException e) {
+										disconnected.add(st);
+									}
 								}
 							}
 							break;
 						
 						// Chat
 						case "chat":
-							for (ServerThread st : Server.socketThreadList) {
-								try {
-									st.output.writeUTF(msg);
-									st.output.flush();
-								} catch (IOException e) {
-									disconnected.add(st);
+							synchronized(Server.socketThreadList) {
+								for (ServerThread st : Server.socketThreadList) {
+									try {
+										st.output.writeUTF(msg);
+										st.output.flush();
+									} catch (IOException e) {
+										disconnected.add(st);
+									}
 								}
 							}
 							break;
@@ -177,14 +179,16 @@ public class ServerThread implements Runnable {
 							
 							// If the left client is manager
 							if (this == Server.manager) {
-								for (ServerThread st : Server.socketThreadList) {
-									try {
-										reply.put("header", "close");
-										st.output.writeUTF(msg);
-										st.output.flush();
-										st.stopThread();
-									} catch (IOException e) {
-										disconnected.add(st);
+								synchronized(Server.socketThreadList) {
+									for (ServerThread st : Server.socketThreadList) {
+										try {
+											reply.put("header", "close");
+											st.output.writeUTF(msg);
+											st.output.flush();
+											st.stopThread();
+										} catch (IOException e) {
+											disconnected.add(st);
+										}
 									}
 								}
 								System.exit(1);
@@ -193,14 +197,16 @@ public class ServerThread implements Runnable {
 						
 						// New whiteboard
 						case "new":
-							Server.shapes.clear();
-							for (ServerThread st : Server.socketThreadList) {
-								try {
-									reply.put("header", "new");
-									st.output.writeUTF(msg);
-									st.output.flush();
-								} catch (IOException e) {
-									disconnected.add(st);
+							Server.clearShape();
+							synchronized(Server.socketThreadList) {
+								for (ServerThread st : Server.socketThreadList) {
+									try {
+										reply.put("header", "new");
+										st.output.writeUTF(msg);
+										st.output.flush();
+									} catch (IOException e) {
+										disconnected.add(st);
+									}
 								}
 							}
 							break;
@@ -209,11 +215,7 @@ public class ServerThread implements Runnable {
 					
 					// Process disconnected clients
 					if (disconnected.size() != 0) {
-						for (ServerThread st : disconnected) {
-							Server.names.remove(st.name);
-							Server.socketThreadList.remove(st);
-							st.stopThread();
-						}
+						Server.remove(disconnected);
 						disconnected.clear();
 					}
 					
@@ -265,7 +267,7 @@ public class ServerThread implements Runnable {
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void sendAllUsers() {
+	private synchronized void sendAllUsers() {
 		JSONObject newMsg = new JSONObject();
 		String names = "";
 		for (String name : Server.names) {

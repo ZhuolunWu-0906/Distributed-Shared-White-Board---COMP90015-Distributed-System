@@ -151,7 +151,7 @@ public class ClientThread {
 			output.writeUTF(toSend.toJSONString());
 			output.flush();
 		} catch (IOException e2) {
-			e2.printStackTrace();
+			JOptionPane.showMessageDialog(jp,"Server Closed","Server closed",1);
 		}
 	}
 
