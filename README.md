@@ -49,4 +49,4 @@ Server and clients use JSON string for communication, via Java TCP socket.
 
 ``` java -jar client.jar```
 
-Note: Client needs to enter server's IP address and port number.
+Note: Client needs to enter server's IP address and port number in the GUI after running the above command line argument.
