@@ -14,16 +14,23 @@ import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 @SuppressWarnings("serial")
 public class Listener extends JPanel implements ActionListener, MouseListener, MouseMotionListener, WindowListener {
@@ -37,6 +44,8 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 
 	public Graphics2D board = null;
 	public ArrayList<Shape> shapes = new ArrayList<Shape>();
+	
+	private JSONParser parser = new JSONParser();
 	
 	public Listener(Socket socket, DataInputStream input, DataOutputStream output) {
 		this.input = input;
@@ -167,6 +176,56 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 //			Open a painting from file
 			case "Open":
 				if (jp.isManager) {
+					JFileChooser chooser = new JFileChooser(".");
+					chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+//					chooser.addChoosableFileFilter(new FileNameExtensionFilter("json"));
+					int response = chooser.showOpenDialog(jp);
+					
+					if (response == JFileChooser.APPROVE_OPTION) {
+						
+						File file = chooser.getSelectedFile();
+						
+						try {
+							@SuppressWarnings("resource")
+							Scanner fileIn = new Scanner(file);
+							
+							if (file.isFile()) {
+								JSONArray jsons = new JSONArray();
+								
+								while (fileIn.hasNextLine()) {
+									String line = fileIn.nextLine();
+									
+									if (line.contains("shapeName")) {
+										JSONObject newShape = parseJson(line);
+										
+										if (newShape == null ) {
+											JOptionPane.showMessageDialog(jp,"Unsupported JSON format.","File format error",0); return;
+										} else {
+											jsons.add(newShape);
+										}
+									} else {
+										JOptionPane.showMessageDialog(jp,"Unsupported JSON format.","File format error",0); return;
+									}
+								}
+								
+								sendNew();
+								Thread.sleep(100);
+								for (int i = 0; i < jsons.size(); i++) {
+									clientThread.sendMsg((JSONObject) jsons.get(i));
+								}
+								
+							} else {
+								JOptionPane.showMessageDialog(jp,"Unsupported JSON format.","File format error",0);
+							}
+							
+						} catch (FileNotFoundException e1) {
+							JOptionPane.showMessageDialog(jp,"Failed to open File Scanner.","File Scanner error",0);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+						
+//						while
+					}
 					
 				} else {
 					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
@@ -176,11 +235,7 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 //			Save current painting
 			case "Save":
 				if (jp.isManager) {
-					try {
-						savePng();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
+					saveJson("new-painting.json");
 				} else {
 					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
 				}
@@ -190,7 +245,20 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 //			Save current painting as
 			case "Save as":
 				if (jp.isManager) {
-					
+					JFileChooser chooser = new JFileChooser(".");
+					chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+					int response = chooser.showSaveDialog(jp);
+					if (response == JFileChooser.APPROVE_OPTION) {
+						File file = chooser.getSelectedFile();
+						String fileLocation = file.getAbsolutePath();
+						if (fileLocation.endsWith("png")) {
+							savePng(fileLocation);
+						} else if (fileLocation.endsWith("json")) {
+							saveJson(fileLocation);
+						} else {
+							JOptionPane.showMessageDialog(jp,"You can only save as JSON or PNG","No access ",0);
+						}
+					}
 				} else {
 					JOptionPane.showMessageDialog(jp,"Sorry, you can not use this feature","No access ",0);
 				}
@@ -214,8 +282,8 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 				break;
 		}
 	}
-	
-//	Draw the shape on board
+
+	//	Draw the shape on board
 	private void drawShape(Graphics2D target, Shape shape) {
 		switch (shape.shapeName) {
 			case "Pencil":
@@ -301,7 +369,7 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 		jp.repaint();
 	}
 	
-	private void savePng() throws IOException {
+	private void savePng(String fileLocation) {
 		BufferedImage bi = new BufferedImage(jp.getWidth(), jp.getHeight(), BufferedImage.TYPE_INT_RGB);
 		Graphics2D image = (Graphics2D) bi.getGraphics();
 		image.fillRect(0, 0, jp.getWidth(), jp.getHeight());
@@ -309,7 +377,53 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 			image.setPaint(shapes.get(i).color);
 			drawShape(image, shapes.get(i));
 		}
-		ImageIO.write(bi, "PNG", new File("new-painting.png"));
+		try {
+			ImageIO.write(bi, "PNG", new File(fileLocation));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void saveJson(String fileLocation) {
+		try (FileWriter file = new FileWriter(fileLocation)) {
+            for (Shape shape : shapes) {
+            	JSONObject shapeJsonObject = new JSONObject();
+            	shapeJsonObject.put("header", "shape");
+        		
+            	shapeJsonObject.put("shapeName", shape.shapeName);
+            	shapeJsonObject.put("color", shape.color.getRGB());
+            	shapeJsonObject.put("x1", shape.x1);
+            	shapeJsonObject.put("y1", shape.y1);
+        		if (shape.shapeName.equals("Text")) {
+        			shapeJsonObject.put("text", shape.text);
+        		} else {
+        			shapeJsonObject.put("x2", shape.x2);
+        			shapeJsonObject.put("y2", shape.y2);
+        		}
+        		file.write(shapeJsonObject.toJSONString() +"\n"); 
+                file.flush();
+            }
+ 
+        } catch (IOException e) {
+        	JOptionPane.showMessageDialog(jp,"Error when creating file.","File creating error",0);
+        }
+		
+	}
+	
+//	Parse incoming message to JSONObject
+	public JSONObject parseJson(String msg) {
+		
+		JSONObject JMsg = null;
+		
+		try {
+			JMsg = (JSONObject) parser.parse(msg);
+		} catch (ParseException e) {
+			return null;
+		}
+		
+		return JMsg;
+		
 	}
 
 }
