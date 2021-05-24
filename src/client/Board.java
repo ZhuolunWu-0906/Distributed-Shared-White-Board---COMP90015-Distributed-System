@@ -32,23 +32,23 @@ import org.json.simple.parser.ParseException;
 @SuppressWarnings("serial")
 public class Board extends JPanel{
 	
-	Socket socket = null;
-	DataInputStream input;
-	DataOutputStream output;
 
-	String ip;
-	int port;
-	String name;
-	boolean isManager = false;
-	boolean socketCreated = false;
+	private String ip;
+	private int port;
+	private Socket socket = null;
 	
-	JTextArea users;
-	JTextArea chatArea;
-	JTextArea texting;
-	JComboBox<String> kickUser;
+	protected DataInputStream input;
+	protected DataOutputStream output;
+
+	protected String name;
+	protected ArrayList<String> userList = new ArrayList<String>();
+	protected boolean isManager = false;
+	protected boolean socketCreated = false;
 	
-	public ArrayList<String> userList = new ArrayList<String>();
-	
+	protected JTextArea users;
+	protected JTextArea chatArea;
+	protected JTextArea texting;
+	protected JComboBox<String> kickUser;
 	private Dimension dmColor = new Dimension(30,30), dmShape = new Dimension(70,30), dmFile = new Dimension(90, 40);
 	
 	public static void main(String[] args){
@@ -119,7 +119,7 @@ public class Board extends JPanel{
 			}
 			frame.setLayout(new BorderLayout());
 			this.setBackground(Color.white);
-			Listener listener = new Listener(socket, input, output);
+			Listener listener = new Listener();
 			
 //			Drawing control panels
 			JPanel drawControls = new JPanel();

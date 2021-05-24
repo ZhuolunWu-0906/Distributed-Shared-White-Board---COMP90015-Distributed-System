@@ -11,13 +11,10 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -37,27 +34,23 @@ import org.json.simple.parser.ParseException;
 public class Listener extends JPanel implements ActionListener, MouseListener, MouseMotionListener, WindowListener {
 	
 	private ClientThread clientThread;
-	private DataInputStream input;
-	private DataOutputStream output;
 	
 	private Board jp = null;
 	private Shape shape = new Shape("Line", new Color(0, 0, 0));
 
 	public Graphics2D board = null;
-	public ArrayList<Shape> shapes = new ArrayList<Shape>();
+	protected ArrayList<Shape> shapes = new ArrayList<Shape>();
 	
 	private JSONParser parser = new JSONParser();
 	
-	public Listener(Socket socket, DataInputStream input, DataOutputStream output) {
-		this.input = input;
-		this.output = output;
+	public Listener() {
 	}
 	
 	public void setupBoard(Graphics2D board, Board jp) {
 		this.board = board;
 		this.board.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		this.jp = jp;
-		this.clientThread = ClientThread.getCT(input, output);
+		this.clientThread = ClientThread.getCT();
 		clientThread.setupBoard(this, this.jp);
 		this.clientThread.connect();
 	}
@@ -115,12 +108,10 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 			shape.y2 = e.getY();
 			shape.calculate();
 			sendShape();
-			shapes.add(shapeCopy());
 		} else {
 			shape.text = JOptionPane.showInputDialog(jp, "Please enter text:", "Text", 1);
 			if (!(shape.text==null)) {
 				sendShape();
-				shapes.add(shapeCopy());
 			}
 		}
 		shape.x1 = shape.x2;
@@ -312,25 +303,6 @@ public class Listener extends JPanel implements ActionListener, MouseListener, M
 				target.drawString(shape.text, shape.x1, shape.y1+4);
 				break;
 		}
-	}
-	
-//	Make a copy of current drawing shape
-	private Shape shapeCopy() {
-		switch (shape.shapeName) {
-			case "Pencil":
-				return new Shape(shape.shapeName, shape.color, shape.x1, shape.y1, shape.x2, shape.y2);
-			case "Line":
-				return new Shape(shape.shapeName, shape.color, shape.x1, shape.y1, shape.x2, shape.y2);
-			case "Circle":
-				return new Shape(shape.shapeName, shape.color, shape.x1, shape.y1, shape.x2, shape.y2);
-			case "Oval":
-				return new Shape(shape.shapeName, shape.color, shape.x1, shape.y1, shape.x2, shape.y2);
-			case "Rect":
-				return new Shape(shape.shapeName, shape.color, shape.x1, shape.y1, shape.x2, shape.y2);
-			case "Text":
-				return new Shape(shape.shapeName, shape.color, shape.text, shape.x1, shape.x2);
-		}
-		return null;
 	}
 	
 	// Send new shapes

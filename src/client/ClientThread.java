@@ -2,8 +2,6 @@ package client;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 
 import javax.swing.JOptionPane;
@@ -20,19 +18,12 @@ public class ClientThread {
 	
 	private boolean isStopped = false;
 	
-//	private Socket socket;
-	private DataInputStream input;
-	private DataOutputStream output;
-	
 	private JSONParser parser = new JSONParser();
 	
 //	Singleton creation
 	private ClientThread() {}
 	private static final ClientThread ct = new ClientThread();
-	public static ClientThread getCT(DataInputStream input, DataOutputStream output) {
-//		ct.socket = socket;
-		ct.input = input;
-		ct.output = output;
+	public static ClientThread getCT() {
 		return ct;
 	}
 	
@@ -57,7 +48,7 @@ public class ClientThread {
 					Thread.sleep(200);
 					JMsg = new JSONObject();
 					JMsg.put("header", "initialize");
-					output.writeUTF(JMsg.toJSONString());
+					jp.output.writeUTF(JMsg.toJSONString());
 				} catch (IOException | InterruptedException e) {
 					
 				}
@@ -67,9 +58,9 @@ public class ClientThread {
 					JMsg = null;
 					
 					try {
-						if (input.available() > 0) {
+						if (jp.input.available() > 0) {
 							
-							msg = input.readUTF();
+							msg = jp.input.readUTF();
 							JMsg = parseJson(msg);
 							
 //							System.out.println(msg);
@@ -89,6 +80,7 @@ public class ClientThread {
 										shape = new Shape(shapeName, color, x1, y1, x2, y2);
 									}
 									drawShape(listener.board, shape);
+									listener.shapes.add(shape);
 									break;
 									
 								case "connect":
@@ -162,8 +154,8 @@ public class ClientThread {
 //	Send message manually (from listener)
 	public void sendMsg(JSONObject toSend) {
 		try {
-			output.writeUTF(toSend.toJSONString());
-			output.flush();
+			jp.output.writeUTF(toSend.toJSONString());
+			jp.output.flush();
 		} catch (IOException e2) {
 			JOptionPane.showMessageDialog(jp,"Server Closed","Server closed",1);
 		}

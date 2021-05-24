@@ -18,8 +18,8 @@ public class ServerThread implements Runnable {
 	
 	private boolean isStopped = false;
 	
-	DataInputStream input;
-	DataOutputStream output;
+	public DataInputStream input;
+	public DataOutputStream output;
 	
 	private ArrayList<ServerThread> disconnected = new ArrayList<ServerThread>();
 	public ArrayList<ServerThread> requestList = new ArrayList<ServerThread>();
