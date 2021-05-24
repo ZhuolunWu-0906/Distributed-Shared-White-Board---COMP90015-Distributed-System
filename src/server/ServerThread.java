@@ -191,6 +191,7 @@ public class ServerThread implements Runnable {
 										}
 									}
 								}
+								System.out.println("WARNING - Manager disconnected, server stopped running.");
 								System.exit(1);
 							}
 							break;
