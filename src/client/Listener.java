@@ -1,3 +1,9 @@
+/**
+ * Zhuolun Wu, 954465
+ *
+ * 25/05/2021
+ * description: Client GUI listener and Graphic2D drawing
+ **/
 package client;
 
 import java.awt.Color;

@@ -1,3 +1,9 @@
+/**
+ * Zhuolun Wu, 954465
+ *
+ * 25/05/2021
+ * description: TCP socket thread on Server
+ **/
 package server;
 
 import java.io.DataInputStream;
@@ -198,11 +204,6 @@ public class ServerThread implements Runnable {
 						
 						// New whiteboard
 						case "new":
-							try {
-								Thread.sleep(300);
-							} catch (InterruptedException e1) {
-								e1.printStackTrace();
-							}
 							Server.clearShape();
 							synchronized(Server.socketThreadList) {
 								for (ServerThread st : Server.socketThreadList) {
@@ -213,6 +214,12 @@ public class ServerThread implements Runnable {
 									} catch (IOException e) {
 										disconnected.add(st);
 									}
+								}
+
+								try {
+									Thread.sleep(1000);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
 								}
 							}
 							break;

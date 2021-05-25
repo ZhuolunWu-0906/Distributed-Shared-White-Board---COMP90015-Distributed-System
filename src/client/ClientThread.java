@@ -1,3 +1,9 @@
+/**
+ * Zhuolun Wu, 954465
+ *
+ * 25/05/2021
+ * description: Client TCP socket thread
+ **/
 package client;
 
 import java.awt.Color;
